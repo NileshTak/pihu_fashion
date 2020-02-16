@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
               autoPlayInterval: Duration(seconds: 3),
               autoPlayAnimationDuration: Duration(milliseconds: 800),
               autoPlayCurve: Curves.fastOutSlowIn,
-              pauseAutoPlayOnTouch: Duration(seconds: 10),
+              pauseAutoPlayOnTouch: Duration(seconds: 6),
               enlargeCenterPage: true,
               scrollDirection: Axis.horizontal,
               reverse: false,
@@ -177,6 +177,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   _loadMoreVideos() async {
     _isLoading = true;
+    if(_isLoading) {
+      Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Theme.of(context).primaryColor, // Red
+          ),
+        ),
+      );
+    }
     List<Video> moreVideos = await APIService.instance
         .fetchVideosFromPlaylist(playlistId: _channel.uploadPlaylistId);
     List<Video> allVideos = _channel.videos..addAll(moreVideos);
