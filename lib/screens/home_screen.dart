@@ -1,10 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pihu_fashion/models/channel_model.dart';
 import 'package:pihu_fashion/models/video_model.dart';
 import 'package:pihu_fashion/screens/video_screen.dart';
 import 'package:pihu_fashion/services/api_service.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -153,7 +156,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           children: <Widget>[
             ClipRRect(
-              borderRadius: BorderRadius.only(topRight: Radius.circular(8.0),bottomRight: Radius.circular(8.0) ),
+              borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(8.0),
+                  bottomRight: Radius.circular(8.0)),
               child: Image(
                 width: 150.0,
                 image: NetworkImage(video.thumbnailUrl),
@@ -177,15 +182,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   _loadMoreVideos() async {
     _isLoading = true;
-    if(_isLoading) {
-      Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).primaryColor, // Red
-          ),
-        ),
-      );
-    }
     List<Video> moreVideos = await APIService.instance
         .fetchVideosFromPlaylist(playlistId: _channel.uploadPlaylistId);
     List<Video> allVideos = _channel.videos..addAll(moreVideos);
@@ -210,9 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   var _theme = ThemeData(
     primaryColor: MaterialColor(0xffe32249, color),
-    accentColor: MaterialColor(0xff550a46, color),
+    accentColor: MaterialColor(0xff400082, color),
   );
-
 
   @override
   Widget build(BuildContext context) {
@@ -221,8 +216,6 @@ class _HomeScreenState extends State<HomeScreen> {
       theme: _theme,
       home: Stack(
         children: <Widget>[
-
-
           Scaffold(
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(72.0),
@@ -231,43 +224,41 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text('Pihu Fashion',
                         style: GoogleFonts.lobster(
                           textStyle:
-                          TextStyle(color: Colors.white,fontSize: 26.0),
+                              TextStyle(color: Colors.white, fontSize: 26.0),
                         ))),
               ),
             ),
             body: _channel != null
                 ? NotificationListener<ScrollNotification>(
-              onNotification: (ScrollNotification scrollDetails) {
-                if (!_isLoading &&
-                    _channel.videos.length !=
-                        int.parse(_channel.videoCount) &&
-                    scrollDetails.metrics.pixels ==
-                        scrollDetails.metrics.maxScrollExtent) {
-                  _loadMoreVideos();
-                }
-                return false;
-              },
-              child: ListView.builder(
-                itemCount: 1 + _channel.videos.length,
-                itemBuilder: (BuildContext context, int index) {
-                  if (index == 0) {
-                    return _buildProfileInfo();
-                  }
-                  Video video = _channel.videos[index - 1];
-                  return
-                    _buildVideo(video);
-                },
-              ),
-            )
+                    onNotification: (ScrollNotification scrollDetails) {
+                      if (!_isLoading &&
+                          _channel.videos.length !=
+                              int.parse(_channel.videoCount) &&
+                          scrollDetails.metrics.pixels ==
+                              scrollDetails.metrics.maxScrollExtent) {
+                        _loadMoreVideos();
+                      }
+                      return false;
+                    },
+                    child: ListView.builder(
+                      itemCount: 1 + _channel.videos.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        if (index == 0) {
+                          return _buildProfileInfo();
+                        }
+                        Video video = _channel.videos[index - 1];
+                        return _buildVideo(video);
+                      },
+                    ),
+                  )
                 : Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).primaryColor, // Red
-                ),
-              ),
-            ),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor, // Red
+                      ),
+                    ),
+                  ),
           ),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -285,8 +276,91 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    FloatingActionButton(
+                        child: Icon(Icons.ac_unit),
+                        backgroundColor: MaterialColor(0xffe32249, color),
+                        onPressed: () {
+                          _settingModalBottomSheet(context);
+                        }),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
+  }
+}
+
+void _settingModalBottomSheet(context) {
+  showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          child: new Wrap(
+            children: <Widget>[
+              new ListTile(
+                  leading: new Icon(Icons.ondemand_video),
+                  title: new Text('Youtube'),
+                  onTap: () => {_launchURL()}),
+              new ListTile(
+                leading: new Icon(Icons.exit_to_app),
+                title: new Text('Exit'),
+                onTap: () => {
+                  Alert(
+                    context: context,
+//                    type: AlertType.warning,
+                    title: "ALERT",
+                    desc: "Are you sure want to Exit ?",
+                    image: Image.asset("images/image1.png"),
+                    buttons: [
+                      DialogButton(
+                          child: Text("Exit",
+                              style: GoogleFonts.lobster(
+                                textStyle: TextStyle(
+                                    color: Colors.white, fontSize: 20.0),
+                              )),
+                          onPressed: () => SystemChannels.platform
+                              .invokeMethod('SystemNavigator.pop'),
+                          color: Colors.red),
+                      DialogButton(
+                        child: Text(
+                          "Cancel",
+                            style: GoogleFonts.lobster(
+                              textStyle: TextStyle(
+                                  color: Colors.white, fontSize: 20.0),
+                            )),
+                        onPressed: () => Navigator.pop(context),
+                        color: Colors.green,
+                      )
+                    ],
+                  ).show()
+                },
+              ),
+            ],
+          ),
+        );
+      });
+}
+
+Future<void> _launchURL() async {
+  const url =
+      'https://www.youtube.com/channel/UCh95wTVDG-VAaEN10VjgxmQ/featured';
+  if (await canLaunch(url)) {
+    await launch(url,
+        forceSafariVC: false,
+        forceWebView: false,
+        headers: <String, String>{'header_key': 'header_value'});
+  } else {
+    throw 'Could not launch $url';
   }
 }
