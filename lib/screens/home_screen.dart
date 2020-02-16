@@ -267,10 +267,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Card(
                   elevation: 10.0,
                   shape: CircleBorder(),
-                  child: CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 25.0,
-                    backgroundImage: NetworkImage(_channel.profilePictureUrl),
+                  child: ClipRRect(
+//                    backgroundColor: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(100.0)),
+                    child: Image(image: AssetImage('images/pihu.png'),width: 48.0,),
                   ),
                 ),
               ),
@@ -316,12 +316,13 @@ void _settingModalBottomSheet(context) {
                 leading: new Icon(Icons.exit_to_app),
                 title: new Text('Exit'),
                 onTap: () => {
+
                   Alert(
                     context: context,
 //                    type: AlertType.warning,
                     title: "ALERT",
                     desc: "Are you sure want to Exit ?",
-                    image: Image.asset("images/image1.png"),
+                    image: Image.asset("images/pihu.png"),
                     buttons: [
                       DialogButton(
                           child: Text("Exit",
